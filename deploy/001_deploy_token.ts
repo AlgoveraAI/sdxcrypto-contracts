@@ -11,10 +11,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
   console.log("Deployer: ", deployer);
 
-  const SignatureChecker = await deploy("SignatureChecker", {
-    from: deployer,
-    log: true,
-  });
+  //   const SignatureChecker = await deploy("SignatureChecker", {
+  //     from: deployer,
+  //     log: true,
+  //   });
   await sleep(10000); // let the tx propagate to prevent nonce reuse
 
   await deploy("Contract", {
@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [],
     log: true,
     libraries: {
-      SignatureChecker: SignatureChecker.address,
+      //   SignatureChecker: SignatureChecker.address,
     },
   });
 };
