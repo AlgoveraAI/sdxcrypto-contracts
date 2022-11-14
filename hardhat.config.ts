@@ -1,8 +1,7 @@
 import "hardhat-gas-reporter";
 import "hardhat-deploy";
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-etherscan";
 import "solidity-coverage";
+import "@nomicfoundation/hardhat-toolbox";
 import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";

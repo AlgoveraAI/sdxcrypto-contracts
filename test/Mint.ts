@@ -16,9 +16,14 @@ describe("Minting", function () {
     const mintPrice = await contract.MINT_PRICE();
     await contract.mint(qty, { value: mintPrice.mul(qty) });
 
-    // get the numer of tokens minted to this newly deployed contract
-    const supply = await contract.totalSupply();
     // ensure that the supply is right
+    const supply = await contract.totalSupply();
     await expect(supply).to.equal(qty);
+    // ensure that the owner has the token
+    const owner = await contract.ownerOf(0);
+    await expect(owner).to.equal(await contract.owner());
+    // check the owners balance
+    const balance = await contract.balanceOf(owner);
+    await expect(balance).to.equal(qty);
   });
 });
