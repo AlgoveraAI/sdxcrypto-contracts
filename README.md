@@ -1,13 +1,24 @@
-# Sample Hardhat Project
+# SDxCrypto Smart Contracts
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+## Install
+`npm i`
 
-Try running some of the following tasks:
+## Setup
+Create `.env` file with variables in `.env.example`
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+## Usage
+
+### Deploy to a test network
+*Get test ETH from https://goerlifaucet.com*
+
+`npx hardhat deploy --network goerli --export-all deployments.json`
+
+
+### Run a script (e.g. set the Base URI)
+`npx hardhat run scripts/setBaseURI --network goerli`
+
+### Run tests
+`npx hardhat test`
+
+### Check test coverage
+`npx hardhat coverage`

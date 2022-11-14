@@ -3,10 +3,10 @@ import { getContract } from "./utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/setTokenURI.ts --network goerli
+npx hardhat run scripts/setBaseURI.ts --network goerli
 */
 
-const DESIRED_TOKEN_URI = "";
+const DESIRED_TOKEN_URI = "ipfs://test";
 
 // check it starts with ipfs://
 if (!DESIRED_TOKEN_URI.startsWith("ipfs://")) {
