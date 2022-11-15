@@ -14,16 +14,17 @@ if (!alchemyKey) {
 
 export async function getContract(chainId: string) {
   // find the contract address created at the last run of hardhat deploy
-  const deploymentInfo = deployment[chainId];
+  const deploymentInfo = deployment[chainId][0];
+  console.log("using deployment", deploymentInfo);
   if (!deploymentInfo)
     // did you run hardhat deploy with the export-all flag?
     throw `Error: no network found in deployments.json for chainId ${chainId}`;
 
-  const networkName = Object.keys(deploymentInfo)[0]; // get the first key
-  const address = deploymentInfo[networkName].contracts.NineteenNinetyX.address;
+  const networkName = deploymentInfo.name;
+  const address = deploymentInfo.contracts.Contract.address;
 
   // load the contract via ethers.js
-  const Contract = await hre.ethers.getContractFactory("NineteenNinetyX");
+  const Contract = await hre.ethers.getContractFactory("Contract");
   if (!Contract || Contract === undefined) {
     throw new Error("Error: could not load contract factory"); // check the name ^
   }

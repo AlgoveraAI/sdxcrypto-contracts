@@ -13,6 +13,9 @@ Create `.env` file with variables in `.env.example`
 
 `npx hardhat deploy --network goerli --export-all deployments.json`
 
+### Verify
+`npx hardhat verify <address> --network goerli`
+
 
 ### Run a script (e.g. set the Base URI)
 `npx hardhat run scripts/setBaseURI --network goerli`

@@ -6,17 +6,18 @@ const hre = require("hardhat");
 npx hardhat run scripts/setBaseURI.ts --network goerli
 */
 
-const DESIRED_TOKEN_URI = "ipfs://test";
+const DESIRED_TOKEN_URI =
+  "https://sdxcrypto-algovera.web.app/api/nft?address=0xbcc440970714a82192a7d3b37B080c4d8dcAdf7F&tokenId=";
 
 // check it starts with ipfs://
-if (!DESIRED_TOKEN_URI.startsWith("ipfs://")) {
-  throw new Error("DESIRED_TOKEN_URI must start with ipfs://");
-}
+// if (!DESIRED_TOKEN_URI.startsWith("ipfs://")) {
+//   throw new Error("DESIRED_TOKEN_URI must start with ipfs://");
+// }
 
-// check it ends with /
-if (!DESIRED_TOKEN_URI.endsWith("/")) {
-  throw new Error("DESIRED_TOKEN_URI must end with /");
-}
+// // check it ends with /
+// if (!DESIRED_TOKEN_URI.endsWith("/")) {
+//   throw new Error("DESIRED_TOKEN_URI must end with /");
+// }
 
 async function main() {
   console.log("setting token uri to", DESIRED_TOKEN_URI);

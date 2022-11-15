@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Contract is ERC721A, Ownable, ReentrancyGuard {
 
-    uint256 public constant MINT_PRICE = 0.01 ether;
+    uint256 public constant MINT_PRICE = 0.001 ether; // TODO finalize price
     uint256 public constant MAX_SUPPLY = 10000;
+    bool public mintingActive = true; // TODO initialize to false in prod
     string public currentBaseURI;
     
     constructor() ERC721A("Contract", "CONTRACT") {
@@ -18,10 +19,10 @@ contract Contract is ERC721A, Ownable, ReentrancyGuard {
     /**
      * @dev Mint a token
     */
-    function mint(uint256 quantity) public payable nonReentrant{
-        require(quantity == 1, "Incorrect quantity");
-        require(totalSupply() + quantity <= MAX_SUPPLY, "Mint would exceed max supply");
-        require(msg.value == MINT_PRICE * quantity, "Incorrect value");
+    function mint() public payable nonReentrant{
+        require(totalSupply() + 1 <= MAX_SUPPLY, "Mint would exceed max supply");
+        require(msg.value == MINT_PRICE, "Incorrect value");
+        emit Transfer(address(0), msg.sender, totalSupply());
         _safeMint(msg.sender, 1);
     }
 
@@ -40,6 +41,13 @@ contract Contract is ERC721A, Ownable, ReentrancyGuard {
     }
 
     /**
+     * @dev Set the minting active flag
+    */
+    function setMintingActive() public onlyOwner {
+        mintingActive = !mintingActive;
+    }
+
+    /**
      * @dev Withdraw ether to owner's wallet
     */
     function withdrawEth() public onlyOwner {
@@ -47,5 +55,4 @@ contract Contract is ERC721A, Ownable, ReentrancyGuard {
         (bool success, ) = payable(msg.sender).call{value: balance}("");
         require(success, "Withdraw failed");
     }
-
 }
