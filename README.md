@@ -8,6 +8,8 @@ Create `.env` file with variables in `.env.example`
 
 ## Usage
 
+*The `--write` deployment flag creates deployment json files needed by the frontend*
+
 ### Deploy all contracts to a test network
 *Get test ETH from https://goerlifaucet.com*
 
@@ -31,5 +33,5 @@ And you can specify one of the two contracts. E.g. to deploy Access.sol
 ### Run tests
 `npx hardhat test`
 
-### Check test coverage
+### Run tests with coverage
 `npx hardhat coverage`
