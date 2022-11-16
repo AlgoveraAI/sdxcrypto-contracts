@@ -14,9 +14,11 @@ Create `.env` file with variables in `.env.example`
 `npx hardhat deploy --network goerli --write true`
 
 Or you can deploy to the local hardhat network.
+
 `npx hardhat deploy --network hardhat --write true`
 
 And you can specify one of the two contracts. E.g. to deploy Access.sol
+
 `npx hardhat deploy --network hardhat --write true --tags access`
 
 ### Verify
