@@ -8,10 +8,16 @@ Create `.env` file with variables in `.env.example`
 
 ## Usage
 
-### Deploy to a test network
+### Deploy all contracts to a test network
 *Get test ETH from https://goerlifaucet.com*
 
-`npx hardhat deploy --network goerli --export-all deployments.json`
+`npx hardhat deploy --network goerli --write true`
+
+Or you can deploy to the local hardhat network.
+`npx hardhat deploy --network hardhat --write true`
+
+And you can specify one of the two contracts. E.g. to deploy Access.sol
+`npx hardhat deploy --network hardhat --write true --tags access`
 
 ### Verify
 `npx hardhat verify <address> --network goerli`
