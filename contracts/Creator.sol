@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
 
-    mapping (uint256 => string) private tokenURIs;
-    mapping (uint256 => uint256) private tokenPrices;
-    mapping(uint256 => bool) private mintingActive;
+    mapping (uint256 => string) public tokenURIs;
+    mapping (uint256 => uint256) public tokenPrices;
+    mapping(uint256 => bool) public mintingActive;
 
     constructor() ERC721("Creator", "CR") {}
 
@@ -50,7 +50,7 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
      * @param tokenId The token ID
      * @param uri The metadata uri (e.g. ipfs://...)
      */
-    function setTokenMetadata(uint256 tokenId, string memory uri) public onlyOwner {
+    function setTokenURI(uint256 tokenId, string memory uri) public onlyOwner {
         tokenURIs[tokenId] = uri;
     }
 

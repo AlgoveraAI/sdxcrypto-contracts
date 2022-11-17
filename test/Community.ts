@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 import { getContract } from "./utils";
 
-describe("Minting", function () {
+describe("Community", function () {
   it("Should mint", async function () {
     const contract = await getContract("Community");
     // mint
