@@ -1,6 +1,5 @@
 import { config as dotenvConfig } from "dotenv";
 import { resolve } from "path";
-const deployment = require("../deployments.json");
 const hre = require("hardhat");
 const { ethers } = hre;
 const { defaultAbiCoder } = ethers.utils;
@@ -12,19 +11,20 @@ if (!alchemyKey) {
   throw new Error("Please set your ALCHEMY_KEY in a .env file");
 }
 
-export async function getContract(chainId: string) {
+export async function getContract(contractName: string, network: string) {
   // find the contract address created at the last run of hardhat deploy
-  const deploymentInfo = deployment[chainId][0];
-  console.log("using deployment", deploymentInfo);
-  if (!deploymentInfo)
+  // requires that contract was deployed with `npx hardhat deploy --write-true`
+  const deployment = require(`../deployments/${network}/${contractName}.json`);
+  if (!deployment)
     // did you run hardhat deploy with the export-all flag?
-    throw `Error: no network found in deployments.json for chainId ${chainId}`;
+    throw `No deployment found for ${contractName} on ${network}`;
 
-  const networkName = deploymentInfo.name;
-  const address = deploymentInfo.contracts.Contract.address;
+  console.log("using deployment", deployment.address);
+
+  const address = deployment.address;
 
   // load the contract via ethers.js
-  const Contract = await hre.ethers.getContractFactory("Contract");
+  const Contract = await hre.ethers.getContractFactory("Access");
   if (!Contract || Contract === undefined) {
     throw new Error("Error: could not load contract factory"); // check the name ^
   }
@@ -32,11 +32,11 @@ export async function getContract(chainId: string) {
 
   // get a provider for estimating gas
   const provider = new hre.ethers.providers.AlchemyProvider(
-    networkName,
+    network,
     alchemyKey
   );
 
-  console.log("got contract on", networkName, contract.address);
+  console.log("got contract on", network, contract.address);
 
-  return { contract, provider, networkName };
+  return { contract, provider };
 }

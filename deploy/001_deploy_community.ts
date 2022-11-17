@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-// npx hardhat deploy --network goerli --write true --tags access
+// npx hardhat deploy --network goerli --write true --tags generative
 
 module.exports = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -10,11 +10,12 @@ module.exports = async function (hre: HardhatRuntimeEnvironment) {
   console.log("Network:", hre.network.name);
 
   /// Deploy the contract
-  await deploy("Access", {
+  // todo: finalise name
+  await deploy("Community", {
     from: deployer,
     log: true,
     libraries: {},
   });
 };
 
-module.exports.tags = ["access"];
+module.exports.tags = ["community"];

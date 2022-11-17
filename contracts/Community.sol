@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 // import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Contract is ERC721A, Ownable, ReentrancyGuard {
+contract Community is ERC721A, Ownable, ReentrancyGuard {
 
     uint256 public constant MINT_PRICE = 0.001 ether; // TODO finalize price
     uint256 public constant MAX_SUPPLY = 10000;
