@@ -4,27 +4,42 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-// import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./SignatureChecker.sol";
+import "./SignerManager.sol";
 
 contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
-
-    mapping (uint256 => string) public tokenURIs;
-    mapping (uint256 => uint256) public tokenPrices;
+    mapping(uint256 => string) public tokenURIs;
+    mapping(uint256 => uint256) public tokenPrices;
     mapping(uint256 => bool) public mintingActive;
+    mapping(bytes32 => bool) public usedMessages;
 
     constructor() ERC721("Creator", "CR") {}
 
     /** @dev Mint a token
      */
-    function mint(
-        uint256 tokenId
-    ) public payable nonReentrant{
+    function mint(uint256 tokenId, bytes calldata signature)
+        public
+        payable
+        nonReentrant
+    {
         // needs metadata, a price, and active minting
         require(bytes(tokenURIs[tokenId]).length > 0, "URI not set");
         require(tokenPrices[tokenId] != 0, "Price not set");
         require(mintingActive[tokenId], "Minting not active");
         // check the value
         require(msg.value == tokenPrices[tokenId], "Incorrect value");
+        // check the signature
+        if (signature) {
+            bytes memory data = abi.encode(this, msg.sender, tokenId);
+            SignatureChecker.requireValidSignature(
+                signers,
+                data,
+                signature,
+                usedMessages
+            );
+        }
+        // mint
         _safeMint(msg.sender, tokenId);
     }
 
@@ -59,10 +74,10 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
     function setMintingActive(uint256 tokenId, bool active) public onlyOwner {
         mintingActive[tokenId] = active;
     }
-    
+
     /**
      * @dev Withdraw ether to owner's wallet
-    */
+     */
     function withdrawEth() public onlyOwner {
         uint256 balance = address(this).balance;
         (bool success, ) = payable(msg.sender).call{value: balance}("");
