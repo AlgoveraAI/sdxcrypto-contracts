@@ -2,19 +2,28 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./SignatureChecker.sol";
 import "./SignerManager.sol";
 
-contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
+contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
     mapping(uint256 => string) public tokenURIs;
     mapping(uint256 => uint256) public tokenPrices;
     mapping(uint256 => bool) public mintingActive;
     mapping(bytes32 => bool) public usedMessages;
 
-    constructor() ERC721("Creator", "CR") {}
+    string public name;    
+    string public symbol;
+
+     constructor(
+        string memory _name,
+        string memory _symbol
+    ) ERC1155("") {
+        name = _name;
+        symbol = _symbol;
+    }
 
     /** @dev Mint a token
      */
@@ -27,11 +36,9 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
         require(bytes(tokenURIs[tokenId]).length > 0, "URI not set");
         require(tokenPrices[tokenId] != 0, "Price not set");
         require(mintingActive[tokenId], "Minting not active");
-        // check the value
-        require(msg.value == tokenPrices[tokenId], "Incorrect value");
-        // check the signature
-        if (signature) {
-            bytes memory data = abi.encode(this, msg.sender, tokenId);
+        if (signature.length > 0) {
+            // check the signature (includes a custom price)
+            bytes memory data = abi.encode(this, msg.sender, tokenId, msg.value);            
             SignatureChecker.requireValidSignature(
                 signers,
                 data,
@@ -39,13 +46,17 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
                 usedMessages
             );
         }
+        else {
+            // minting without a signature uses the standard price
+            require(msg.value == tokenPrices[tokenId], "Incorrect value");
+        }
         // mint
-        _safeMint(msg.sender, tokenId);
+        _mint(msg.sender, tokenId, 1, "");
     }
 
-    /** @dev Overrides the base URI to return stored token metadata
+    /** @dev Return the URI for a token
      */
-    function tokenURI(uint256 tokenId)
+    function uri(uint256 tokenId)
         public
         view
         virtual
@@ -63,10 +74,10 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
 
     /** @dev Set the metadata for a token
      * @param tokenId The token ID
-     * @param uri The metadata uri (e.g. ipfs://...)
+     * @param _uri The metadata uri (e.g. ipfs://...)
      */
-    function setTokenURI(uint256 tokenId, string memory uri) public onlyOwner {
-        tokenURIs[tokenId] = uri;
+    function setTokenURI(uint256 tokenId, string memory _uri) public onlyOwner {
+        tokenURIs[tokenId] = _uri;
     }
 
     /** @dev Set the minting active flag
@@ -74,6 +85,20 @@ contract Creator is ERC721Enumerable, Ownable, ReentrancyGuard {
     function setMintingActive(uint256 tokenId, bool active) public onlyOwner {
         mintingActive[tokenId] = active;
     }
+
+    // /**
+    //  * @dev Helper to check if a signature has been used
+    //  * @param to The address to mint to
+    //  * @param tokenId The max number of tokens to mint
+    //  */
+    // function sigUsed(
+    //     address to,
+    //     uint256 tokenId
+    // ) public view returns (bool) {
+    //     bytes memory data = abi.encode(this, to, tokenId);
+    //     bytes32 message = SignatureChecker.generateMessage(data);
+    //     return usedMessages[message];
+    // }
 
     /**
      * @dev Withdraw ether to owner's wallet

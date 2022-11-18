@@ -16,8 +16,8 @@ contract Community is ERC721A, Ownable, ReentrancyGuard {
     /**
      * @dev Mint a token
      */
-    function mint(signature) public payable nonReentrant {
-        reqire(mintingActive, "Minting not active");
+    function mint(bytes calldata signature) public payable nonReentrant {
+        require(mintingActive, "Minting not active");
         emit Transfer(address(0), msg.sender, totalSupply());
         _safeMint(msg.sender, 1);
     }
