@@ -41,17 +41,30 @@ export async function getContract(contractName: string, network: string) {
   return { contract, provider };
 }
 
-export async function getSignature(
+export async function getSignatureCreator(
   signer: any,
   contractAddress: string,
   allowlistAddress: string,
   tokenId: number,
   price: number
 ) {
-  console.log("signing", contractAddress, allowlistAddress, tokenId, price);
   const payload = defaultAbiCoder.encode(
     ["address", "address", "uint256", "uint256"],
     [contractAddress, allowlistAddress, tokenId, price]
+  );
+  const signature = await signer.signMessage(ethers.utils.arrayify(payload));
+  return signature;
+}
+
+export async function getSignatureCommunity(
+  signer: any,
+  contractAddress: string,
+  allowlistAddress: string,
+  sigId: string
+) {
+  const payload = defaultAbiCoder.encode(
+    ["address", "address", "string"],
+    [contractAddress, allowlistAddress, sigId]
   );
   const signature = await signer.signMessage(ethers.utils.arrayify(payload));
   return signature;

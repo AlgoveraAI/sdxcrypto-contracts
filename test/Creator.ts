@@ -1,6 +1,10 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
-import { getContract, createSignatures, executeSignedMint } from "./utils";
+import {
+  getContract,
+  createSignaturesCreator,
+  executeSignedMint,
+} from "./utils";
 
 describe("Creator", function () {
   it("Fails to mint if uri not set", async function () {
@@ -43,7 +47,7 @@ describe("Creator", function () {
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
     await contract.setMintingActive(tokenId, true);
-    const { signatures, signers } = await createSignatures(
+    const { signatures, signers } = await createSignaturesCreator(
       contract,
       tokenId,
       0 // free mint as specified in the signature
@@ -66,7 +70,7 @@ describe("Creator", function () {
     await contract.setMintingActive(tokenId, true);
     const owner = await contract.owner();
     await contract.addSigner(owner);
-    const { signatures, signers } = await createSignatures(
+    const { signatures, signers } = await createSignaturesCreator(
       contract,
       tokenId,
       0 // free mint as specified in the signature

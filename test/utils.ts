@@ -1,5 +1,8 @@
 const { ethers } = require("hardhat");
-const { getSignature } = require("../scripts/utils");
+const {
+  getSignatureCreator,
+  getSignatureCommunity,
+} = require("../scripts/utils");
 const { Signer, Contract } = require("ethers");
 
 export async function getContract(contractName: string) {
@@ -14,7 +17,7 @@ export async function getContract(contractName: string) {
   return contract;
 }
 
-export async function createSignatures(
+export async function createSignaturesCreator(
   contract: any,
   tokenId: number,
   price: number
@@ -28,12 +31,33 @@ export async function createSignatures(
   // create the signatures
   const signatures: any = {};
   for (const signer of signers) {
-    signatures[signer.address] = await getSignature(
+    signatures[signer.address] = await getSignatureCreator(
       owner, // signature signer
       contract.address,
       signer.address, // buyer (will sign the mint txn)
       tokenId,
       price
+    );
+  }
+
+  return { signatures, signers };
+}
+
+export async function createSignaturesCommunity(contract: any) {
+  const [owner, signer1, signer2, signer3] = await ethers.getSigners();
+
+  // dont include the owner
+  const signers = [signer1, signer2, signer3];
+  //   const signers = [signer1];
+
+  // create the signatures
+  const signatures: any = {};
+  for (const signer of signers) {
+    signatures[signer.address] = await getSignatureCommunity(
+      owner, // signature signer
+      contract.address,
+      signer.address, // buyer (will sign the mint txn)
+      "testId"
     );
   }
 
@@ -48,9 +72,11 @@ export async function executeSignedMint(
 ) {
   console.log("Executing signed mint with args", args);
   const methodSig = await contract.interface.encodeFunctionData("mint", args);
-  await signer.sendTransaction({
+  const tx = await signer.sendTransaction({
     to: contract.address,
     value: value,
     data: methodSig,
   });
+  const receipt = await tx.wait();
+  return receipt;
 }

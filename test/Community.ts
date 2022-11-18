@@ -1,28 +1,32 @@
 const { ethers } = require("hardhat");
 const { expect } = require("chai");
-import { getContract } from "./utils";
+import {
+  createSignaturesCommunity,
+  executeSignedMint,
+  getContract,
+} from "./utils";
 
-describe.only("Community", function () {
-  it("Mint", async function () {
+describe("Community", function () {
+  it.only("Mint", async function () {
     const contract = await getContract("Community");
-    // mint
+    await contract.toggleMintingActive();
     const qty = 1;
-    const mintPrice = await contract.MINT_PRICE();
-    await contract.mint({ value: mintPrice.mul(qty) });
-    // get the numer of tokens minted to this newly deployed contract
+    await contract.addSigner(await contract.owner());
+    const { signatures, signers } = await createSignaturesCommunity(contract);
+    const receipt = await executeSignedMint(
+      contract,
+      [signatures[signers[0].address], "testId"], // mint args
+      signers[0], // minter
+      0 // free mint
+    );
+    // check the supply has gone up
     const supply = await contract.totalSupply();
-    // ensure that the supply is right
     await expect(supply).to.equal(qty);
-  });
-  it("Emits the tokenId", async function () {
-    const contract = await getContract("Community");
-    // mint
-    const qty = 1;
-    const mintPrice = await contract.MINT_PRICE();
-    const tx = await contract.mint({ value: mintPrice.mul(qty) });
-    const receipt = await tx.wait();
+    // check the minter's balance
+    const balance = await contract.balanceOf(signers[0].address);
+    await expect(balance).to.equal(qty);
+    // check the tokenid was emitted
     let tokenId = receipt.logs[0].topics[3];
-    // convert the tokenId to a number
     tokenId = parseInt(tokenId, 16);
     await expect(tokenId).to.equal(0);
   });
