@@ -24,7 +24,7 @@ export async function getContract(contractName: string, network: string) {
   const address = deployment.address;
 
   // load the contract via ethers.js
-  const Contract = await hre.ethers.getContractFactory("Access");
+  const Contract = await hre.ethers.getContractFactory(contractName);
   if (!Contract || Contract === undefined) {
     throw new Error("Error: could not load contract factory"); // check the name ^
   }

@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-// npx hardhat deploy --network goerli --write true --tags generative
+// npx hardhat deploy --network goerli --write true --tags community
 
 module.exports = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;

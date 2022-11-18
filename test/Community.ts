@@ -7,7 +7,7 @@ import {
 } from "./utils";
 
 describe("Community", function () {
-  it.only("Mint", async function () {
+  it("Mint", async function () {
     const contract = await getContract("Community");
     await contract.toggleMintingActive();
     const qty = 1;

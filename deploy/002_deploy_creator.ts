@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-// npx hardhat deploy --network goerli --write true --tags access
+// npx hardhat deploy --network goerli --write true --tags creator
 
 module.exports = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;

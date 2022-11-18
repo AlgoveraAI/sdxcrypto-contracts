@@ -1,31 +1,23 @@
 import { ethers } from "ethers";
-import { getContract } from "./utils";
+import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/setAccessMetadata.ts --network goerli
+npx hardhat run scripts/community/addSigner.ts --network goerli
 */
 
-const tokenId = 0;
-const metadataPath = `../metadata/access_${tokenId}.json`;
+const SIGNER = "0x0ca16cb15db1C0F6c251dA492F0311270B3de5B2";
 
 async function main() {
   // get the contract
-  const chainId = await hre.getChainId();
-  const network = hre.network.name;
-  let { contract, provider } = await getContract("Access", network);
-
-  // load the metadata
-  const metadata = require(metadataPath);
-  console.log("metadata", metadata);
-
-  // make the metadata a string
-  const metadataString = JSON.stringify(metadata);
+  console.log("Adding signer", SIGNER);
+  const networkName = hre.network.name;
+  let { contract, provider } = await getContract("Community", networkName);
 
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
-    "setTokenMetadata",
-    [tokenId, metadataString]
+    "addSigner",
+    [SIGNER]
   );
   const owner = await contract.owner();
   const tx = {
@@ -37,7 +29,7 @@ async function main() {
   const gasEstimate = await provider.estimateGas(tx);
 
   // send the transaction to transfer ownership
-  const txnReceipt = await contract.setTokenMetadata(tokenId, metadataString, {
+  const txnReceipt = await contract.addSigner(SIGNER, {
     from: owner,
     value: 0,
     gasLimit: gasEstimate,

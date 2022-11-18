@@ -108,7 +108,7 @@ describe("Creator", function () {
     await contract.setMintingActive(tokenId, true);
     const owner = await contract.owner();
     await contract.addSigner(owner);
-    const { signatures, signers } = await createSignatures(
+    const { signatures, signers } = await createSignaturesCreator(
       contract,
       tokenId,
       0 // free mint as specified in the signature

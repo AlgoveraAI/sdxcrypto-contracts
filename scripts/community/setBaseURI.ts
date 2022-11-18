@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { getContract } from "./utils";
+import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
@@ -23,7 +23,8 @@ async function main() {
   console.log("setting token uri to", DESIRED_TOKEN_URI);
   // get the contract
   const chainId = await hre.getChainId();
-  let { contract, provider, networkName } = await getContract(chainId);
+  const networkName = hre.network.name;
+  let { contract, provider } = await getContract("Community", networkName);
 
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
