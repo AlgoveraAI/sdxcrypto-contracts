@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { expect } = require("chai");
 import { getContract, createSignatures, executeSignedMint } from "./utils";
 
-describe.only("Creator", function () {
+describe("Creator", function () {
   it("Fails to mint if uri not set", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
