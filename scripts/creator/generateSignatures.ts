@@ -56,6 +56,7 @@ async function main() {
       price: PRICE,
     });
   }
+  console.log("signatures uploaded to firebase");
 }
 
 main()
