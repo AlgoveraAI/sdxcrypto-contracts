@@ -34,7 +34,6 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
     {
         // needs metadata, a price, and active minting
         require(bytes(tokenURIs[tokenId]).length > 0, "URI not set");
-        require(tokenPrices[tokenId] != 0, "Price not set");
         require(mintingActive[tokenId], "Minting not active");
 
         // check the balance (wallets can only use one nft - prevent double minting)
@@ -52,6 +51,7 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
         }
         else {
             // minting without a signature uses the standard price
+            // which is 0 if not set
             require(msg.value == tokenPrices[tokenId], "Incorrect value");
         }
         // mint
@@ -86,8 +86,8 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
 
     /** @dev Set the minting active flag
      */
-    function setMintingActive(uint256 tokenId, bool active) public onlyOwner {
-        mintingActive[tokenId] = active;
+    function toggleMintingActive(uint256 tokenId) public onlyOwner {
+        mintingActive[tokenId] = !mintingActive[tokenId];
     }
 
     /**

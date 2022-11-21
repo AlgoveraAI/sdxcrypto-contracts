@@ -7,10 +7,10 @@ npx hardhat run scripts/creator/setMintingActive.ts --network goerli
 */
 
 const tokenId = 0;
-const mintingActive = true;
+const mintingActive = true; // desired state
 
 async function main() {
-  console.log("Setting token price");
+  console.log("Setting minting active");
   console.log("Token ID", tokenId);
   console.log("Minting active", mintingActive);
 
@@ -19,6 +19,7 @@ async function main() {
   const network = hre.network.name;
   let { contract, provider } = await getContract("Creator", network);
 
+  // ensure that the desired minting state isn't already set
   const currentState = await contract.mintingActive(tokenId);
   if (currentState === mintingActive) {
     console.log("Minting already set to", mintingActive);

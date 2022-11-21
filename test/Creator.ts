@@ -12,21 +12,11 @@ describe("Creator minting fail cases", function () {
     const tokenId = 0;
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const emptyBytes = ethers.utils.formatBytes32String("");
     await expect(
       contract.mint(tokenId, emptyBytes, { value: mintPrice })
     ).to.be.revertedWith("URI not set");
-  });
-  it("Fails to mint if price not set", async function () {
-    const contract = await getContract("Creator");
-    const tokenId = 0;
-    await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
-    const emptyBytes = ethers.utils.formatBytes32String("");
-    await expect(
-      contract.mint(tokenId, emptyBytes, { value: 0 })
-    ).to.be.revertedWith("Price not set");
   });
   it("Fails to mint if minting not active", async function () {
     const contract = await getContract("Creator");
@@ -46,7 +36,7 @@ describe("Creator minting fail cases", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const { signatures, signers } = await createSignaturesCreator(
       contract,
       tokenId,
@@ -67,7 +57,7 @@ describe("Creator minting fail cases", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const owner = await contract.owner();
     await contract.addSigner(owner);
     const { signatures, signers } = await createSignaturesCreator(
@@ -108,7 +98,7 @@ describe("Creator minting success cases", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const owner = await contract.owner();
     await contract.addSigner(owner);
     const { signatures, signers } = await createSignaturesCreator(
@@ -146,7 +136,7 @@ describe("Creator minting success cases", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const emptySignature = "0x";
     await contract.mint(tokenId, emptySignature, { value: mintPrice });
     console.log("Checking balance");
@@ -176,9 +166,9 @@ describe("Creator utils", function () {
     console.log("tokenPrice: ", tokenPrice);
     expect(tokenPrice).to.equal(mintPrice);
   });
-  it("Sets mintingActive", async function () {
+  it("Toggles mintingActive", async function () {
     const contract = await getContract("Creator");
-    await contract.setMintingActive(0, true);
+    await contract.toggleMintingActive(0);
     const mintingActive = await contract.mintingActive(0);
     console.log("mintingActive: ", mintingActive);
     expect(mintingActive).to.equal(true);
@@ -192,7 +182,7 @@ describe("Creator transfers", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const owner = await contract.owner();
     await contract.addSigner(owner);
     const { signatures, signers } = await createSignaturesCreator(
@@ -224,7 +214,7 @@ describe("Creator transfers", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
-    await contract.setMintingActive(tokenId, true);
+    await contract.toggleMintingActive(tokenId);
     const owner = await contract.owner();
     await contract.addSigner(owner);
     const { signatures, signers } = await createSignaturesCreator(
