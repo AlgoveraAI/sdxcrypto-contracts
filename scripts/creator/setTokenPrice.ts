@@ -15,9 +15,13 @@ async function main() {
   console.log("Token Price", tokenPrice);
 
   // get the contract
-  const chainId = await hre.getChainId();
   const network = hre.network.name;
   let { contract, provider } = await getContract("Creator", network);
+
+  if (tokenPrice === 0) {
+    console.log("Price defaults to 0, no need to set");
+    return;
+  }
 
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(

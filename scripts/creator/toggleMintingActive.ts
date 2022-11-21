@@ -3,33 +3,24 @@ import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/creator/setMintingActive.ts --network goerli
+npx hardhat run scripts/creator/toggleMintingActive.ts --network goerli
 */
 
 const tokenId = 0;
-const mintingActive = true; // desired state
 
 async function main() {
-  console.log("Setting minting active");
+  console.log("Toggling minting active");
   console.log("Token ID", tokenId);
-  console.log("Minting active", mintingActive);
 
   // get the contract
   const chainId = await hre.getChainId();
   const network = hre.network.name;
   let { contract, provider } = await getContract("Creator", network);
 
-  // ensure that the desired minting state isn't already set
-  const currentState = await contract.mintingActive(tokenId);
-  if (currentState === mintingActive) {
-    console.log("Minting already set to", mintingActive);
-    return;
-  }
-
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
-    "setMintingActive",
-    [tokenId, mintingActive]
+    "toggleMintingActive",
+    [tokenId]
   );
   const owner = await contract.owner();
   const tx = {
@@ -41,7 +32,7 @@ async function main() {
   const gasEstimate = await provider.estimateGas(tx);
 
   // send the transaction to transfer ownership
-  const txnReceipt = await contract.setMintingActive(tokenId, mintingActive, {
+  const txnReceipt = await contract.toggleMintingActive(tokenId, {
     from: owner,
     value: 0,
     gasLimit: gasEstimate,
