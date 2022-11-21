@@ -13,7 +13,6 @@ async function main() {
   console.log("Token ID", tokenId);
 
   // get the contract
-  const chainId = await hre.getChainId();
   const network = hre.network.name;
   let { contract, provider } = await getContract("Creator", network);
 
