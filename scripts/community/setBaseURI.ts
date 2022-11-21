@@ -3,11 +3,11 @@ import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/setBaseURI.ts --network goerli
+npx hardhat run scripts/community/setBaseURI.ts --network goerli
 */
 
 const DESIRED_TOKEN_URI =
-  "https://sdxcrypto-algovera.web.app/api/nft?address=0xbcc440970714a82192a7d3b37B080c4d8dcAdf7F&tokenId=";
+  "https://sdxcrypto-algovera.web.app/api/nft?address=0xFA39019319e36F191d30AC52D945b2BFC34758f9&tokenId=";
 
 // check it starts with ipfs://
 // if (!DESIRED_TOKEN_URI.startsWith("ipfs://")) {

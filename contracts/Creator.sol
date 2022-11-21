@@ -36,6 +36,10 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
         require(bytes(tokenURIs[tokenId]).length > 0, "URI not set");
         require(tokenPrices[tokenId] != 0, "Price not set");
         require(mintingActive[tokenId], "Minting not active");
+
+        // check the balance (wallets can only use one nft - prevent double minting)
+        require(balanceOf(msg.sender, tokenId) == 0, "Already minted");
+
         if (signature.length > 0) {
             // check the signature (includes a custom price)
             bytes memory data = abi.encode(this, msg.sender, tokenId, msg.value);            
@@ -86,19 +90,45 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
         mintingActive[tokenId] = active;
     }
 
-    // /**
-    //  * @dev Helper to check if a signature has been used
-    //  * @param to The address to mint to
-    //  * @param tokenId The max number of tokens to mint
-    //  */
-    // function sigUsed(
-    //     address to,
-    //     uint256 tokenId
-    // ) public view returns (bool) {
-    //     bytes memory data = abi.encode(this, to, tokenId);
-    //     bytes32 message = SignatureChecker.generateMessage(data);
-    //     return usedMessages[message];
-    // }
+    /**
+     * @dev Helper to check if a signature has been used
+     * @param to The address to mint to
+     * @param tokenId The max number of tokens to mint
+     */
+    function sigUsed(
+        address to,
+        uint256 tokenId
+    ) public view returns (bool) {
+        bytes memory data = abi.encode(this, to, tokenId);
+        bytes32 message = SignatureChecker.generateMessage(data);
+        return usedMessages[message];
+    }
+
+    /** 
+     * @dev Disable transfers
+    */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override {
+        revert("Transfers disabled");
+    }
+
+    /** 
+     * @dev Disable batch transfers
+    */
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public override {
+        revert("Transfers disabled");
+    }
 
     /**
      * @dev Withdraw ether to owner's wallet

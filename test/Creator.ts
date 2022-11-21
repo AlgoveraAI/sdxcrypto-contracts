@@ -6,7 +6,7 @@ import {
   executeSignedMint,
 } from "./utils";
 
-describe("Creator", function () {
+describe("Creator minting fail cases", function () {
   it("Fails to mint if uri not set", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
@@ -61,7 +61,7 @@ describe("Creator", function () {
       )
     ).to.be.revertedWith("SignatureChecker: Invalid signature");
   });
-  it("Fails to mint with used signature", async function () {
+  it("Fails to mint multiple tokens", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
     const mintPrice = ethers.utils.parseEther("0.1");
@@ -90,7 +90,7 @@ describe("Creator", function () {
         signers[0],
         0 // free mint as specified in the signature
       )
-    ).to.be.revertedWith("SignatureChecker: Message already used");
+    ).to.be.revertedWith("Already minted");
     // confirm others can use their own unused sigs
     await executeSignedMint(
       contract,
@@ -99,6 +99,9 @@ describe("Creator", function () {
       0 // free mint as specified in the signature
     );
   });
+});
+
+describe("Creator minting success cases", function () {
   it("Signed mint", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
@@ -153,6 +156,9 @@ describe("Creator", function () {
     );
     await expect(signerBalance).to.equal(1);
   });
+});
+
+describe("Creator utils", function () {
   it("Sets URI", async function () {
     const contract = await getContract("Creator");
     const uri = "ipfs://test";
@@ -176,5 +182,72 @@ describe("Creator", function () {
     const mintingActive = await contract.mintingActive(0);
     console.log("mintingActive: ", mintingActive);
     expect(mintingActive).to.equal(true);
+  });
+});
+
+describe("Creator transfers", function () {
+  it("Fails to transfer a minted token", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.setMintingActive(tokenId, true);
+    const owner = await contract.owner();
+    await contract.addSigner(owner);
+    const { signatures, signers } = await createSignaturesCreator(
+      contract,
+      tokenId,
+      0 // free mint as specified in the signature
+    );
+    // mint a token
+    await executeSignedMint(
+      contract,
+      [tokenId, signatures[signers[0].address]],
+      signers[0],
+      0 // free mint as specified in the signature
+    );
+    // try to transfer the token
+    await expect(
+      contract.safeTransferFrom(
+        signers[0].address,
+        signers[1].address,
+        tokenId,
+        1,
+        "0x"
+      )
+    ).to.be.revertedWith("Transfers disabled");
+  });
+  it("Fails to batch transfer a minted token", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.setMintingActive(tokenId, true);
+    const owner = await contract.owner();
+    await contract.addSigner(owner);
+    const { signatures, signers } = await createSignaturesCreator(
+      contract,
+      tokenId,
+      0 // free mint as specified in the signature
+    );
+    // mint a token
+    await executeSignedMint(
+      contract,
+      [tokenId, signatures[signers[0].address]],
+      signers[0],
+      0 // free mint as specified in the signature
+    );
+    // try to transfer the token
+    await expect(
+      contract.safeBatchTransferFrom(
+        signers[0].address,
+        signers[1].address,
+        [tokenId],
+        [1],
+        "0x"
+      )
+    ).to.be.revertedWith("Transfers disabled");
   });
 });
