@@ -14,7 +14,7 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
     mapping(uint256 => bool) public mintingActive;
     mapping(bytes32 => bool) public usedMessages;
 
-    string public name;    
+    string public name;
     string public symbol;
 
      constructor(

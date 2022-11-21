@@ -19,9 +19,9 @@ Or you can deploy to the local hardhat network.
 
 `npx hardhat deploy --network hardhat --write true`
 
-And you can specify one of the two contracts. E.g. to deploy Access.sol
+And you can specify one of the two contracts. E.g. to deploy Creator.sol
 
-`npx hardhat deploy --network hardhat --write true --tags access`
+`npx hardhat deploy --network hardhat --write true --tags creator`
 
 ### Verify
 `npx hardhat verify <address> --network goerli`

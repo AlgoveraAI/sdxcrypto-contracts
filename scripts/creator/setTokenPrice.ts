@@ -3,16 +3,16 @@ import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/creator/setTokenURI.ts --network goerli
+npx hardhat run scripts/creator/setTokenPrice.ts --network goerli
 */
 
 const tokenId = 0;
-const tokenURI = "ipfs://test";
+const tokenPrice = 0;
 
 async function main() {
-  console.log("Setting token URI");
+  console.log("Setting token price");
   console.log("Token ID", tokenId);
-  console.log("Token URI", tokenURI);
+  console.log("Token Price", tokenPrice);
 
   // get the contract
   const chainId = await hre.getChainId();
@@ -21,8 +21,8 @@ async function main() {
 
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
-    "setTokenURI",
-    [tokenId, tokenURI]
+    "setTokenPrice",
+    [tokenId, 0]
   );
   const owner = await contract.owner();
   const tx = {
@@ -34,7 +34,7 @@ async function main() {
   const gasEstimate = await provider.estimateGas(tx);
 
   // send the transaction to transfer ownership
-  const txnReceipt = await contract.setTokenURI(tokenId, tokenURI, {
+  const txnReceipt = await contract.setTokenPrice(tokenId, 0, {
     from: owner,
     value: 0,
     gasLimit: gasEstimate,
@@ -47,8 +47,8 @@ async function main() {
   console.log("executed");
 
   // check the token URI
-  const newtokenURI = await contract.uri(tokenId);
-  console.log("tokenURI", newtokenURI);
+  const newPrice = await contract.tokenPrices(tokenId);
+  console.log("price", newPrice);
 }
 
 main()

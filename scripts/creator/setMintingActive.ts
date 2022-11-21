@@ -3,26 +3,32 @@ import { getContract } from "../utils";
 const hre = require("hardhat");
 
 /*
-npx hardhat run scripts/creator/setTokenURI.ts --network goerli
+npx hardhat run scripts/creator/setMintingActive.ts --network goerli
 */
 
 const tokenId = 0;
-const tokenURI = "ipfs://test";
+const mintingActive = true;
 
 async function main() {
-  console.log("Setting token URI");
+  console.log("Setting token price");
   console.log("Token ID", tokenId);
-  console.log("Token URI", tokenURI);
+  console.log("Minting active", mintingActive);
 
   // get the contract
   const chainId = await hre.getChainId();
   const network = hre.network.name;
   let { contract, provider } = await getContract("Creator", network);
 
+  const currentState = await contract.mintingActive(tokenId);
+  if (currentState === mintingActive) {
+    console.log("Minting already set to", mintingActive);
+    return;
+  }
+
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
-    "setTokenURI",
-    [tokenId, tokenURI]
+    "setMintingActive",
+    [tokenId, mintingActive]
   );
   const owner = await contract.owner();
   const tx = {
@@ -34,7 +40,7 @@ async function main() {
   const gasEstimate = await provider.estimateGas(tx);
 
   // send the transaction to transfer ownership
-  const txnReceipt = await contract.setTokenURI(tokenId, tokenURI, {
+  const txnReceipt = await contract.setMintingActive(tokenId, mintingActive, {
     from: owner,
     value: 0,
     gasLimit: gasEstimate,
@@ -47,8 +53,8 @@ async function main() {
   console.log("executed");
 
   // check the token URI
-  const newtokenURI = await contract.uri(tokenId);
-  console.log("tokenURI", newtokenURI);
+  const newState = await contract.mintingActive(tokenId);
+  console.log("minting active", newState);
 }
 
 main()
