@@ -7,7 +7,8 @@ npx hardhat run scripts/creator/setTokenURI.ts --network goerli
 */
 
 const tokenId = 0;
-const tokenURI = "ipfs://test";
+const tokenURI =
+  "ipfs://bafkreibatjulpv72jpwawxnkvyjkp5k2ckjqrg5t6z6v7gqpgedanfz254";
 
 async function main() {
   console.log("Setting token URI");
