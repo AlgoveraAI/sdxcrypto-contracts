@@ -60,11 +60,13 @@ export async function getSignatureCommunity(
   signer: any,
   contractAddress: string,
   allowlistAddress: string,
-  sigId: string
+  bal: number // current balance of the minter
 ) {
+  // use bal in the signature to ensure new signatures
+  // can always be made and the old ones invalidated
   const payload = defaultAbiCoder.encode(
-    ["address", "address", "string"],
-    [contractAddress, allowlistAddress, sigId]
+    ["address", "address", "uint256"],
+    [contractAddress, allowlistAddress, bal]
   );
   const signature = await signer.signMessage(ethers.utils.arrayify(payload));
   return signature;

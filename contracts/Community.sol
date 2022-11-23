@@ -18,12 +18,12 @@ contract Community is ERC721A, Ownable, ReentrancyGuard, SignerManager {
     /**
      * @dev Mint a token
      * @param signature The signature of the message
-     * @param sigId A unique identifier for the signature, so that the sender can mint again
      */
-    function mint(bytes calldata signature, string memory sigId) public payable nonReentrant {
+    function mint(bytes calldata signature) public payable nonReentrant {
         require(mintingActive, "Minting not active");
         // check the signature
-        bytes memory data = abi.encode(this, msg.sender, sigId);
+        uint256 bal = balanceOf(msg.sender);
+        bytes memory data = abi.encode(this, msg.sender, bal);
         SignatureChecker.requireValidSignature(signers, data, signature, usedMessages);
         emit Transfer(address(0), msg.sender, totalSupply());
         _safeMint(msg.sender, 1);

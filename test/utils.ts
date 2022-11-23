@@ -53,11 +53,12 @@ export async function createSignaturesCommunity(contract: any) {
   // create the signatures
   const signatures: any = {};
   for (const signer of signers) {
+    let bal = await contract.balanceOf(signer.address);
     signatures[signer.address] = await getSignatureCommunity(
       owner, // signature signer
       contract.address,
       signer.address, // buyer (will sign the mint txn)
-      "testId"
+      bal
     );
   }
 
