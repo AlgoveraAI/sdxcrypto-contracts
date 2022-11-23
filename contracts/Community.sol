@@ -17,7 +17,7 @@ contract Community is ERC721A, Ownable, ReentrancyGuard, SignerManager {
 
     /**
      * @dev Mint a token
-     * @param signature The signature of the message
+     * @param signature Provided by Algovera to approve the mint
      */
     function mint(bytes calldata signature) public payable nonReentrant {
         require(mintingActive, "Minting not active");

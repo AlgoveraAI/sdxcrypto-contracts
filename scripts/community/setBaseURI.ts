@@ -7,7 +7,7 @@ npx hardhat run scripts/community/setBaseURI.ts --network goerli
 */
 
 const DESIRED_TOKEN_URI =
-  "https://sdxcrypto-algovera.web.app/api/nft?address=0xFA39019319e36F191d30AC52D945b2BFC34758f9&tokenId=";
+  "https://sdxcrypto-algovera.web.app/api/nft?address=0x223FcE0e16c90346966b20b7B5b9Cf0125808442&tokenId=";
 
 // check it starts with ipfs://
 // if (!DESIRED_TOKEN_URI.startsWith("ipfs://")) {
