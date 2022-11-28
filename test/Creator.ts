@@ -6,6 +6,9 @@ import {
   executeSignedMint,
 } from "./utils";
 
+// use emptyBytes for the signature in unsigned mints
+const emptyBytes = "0x";
+
 describe("Creator minting fail cases", function () {
   it("Fails to mint if uri not set", async function () {
     const contract = await getContract("Creator");
@@ -13,7 +16,7 @@ describe("Creator minting fail cases", function () {
     const mintPrice = ethers.utils.parseEther("0.1");
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.toggleMintingActive(tokenId);
-    const emptyBytes = ethers.utils.formatBytes32String("");
+
     await expect(
       contract.mint(tokenId, emptyBytes, { value: mintPrice })
     ).to.be.revertedWith("URI not set");
@@ -51,6 +54,8 @@ describe("Creator minting fail cases", function () {
       )
     ).to.be.revertedWith("SignatureChecker: Invalid signature");
   });
+  it("Fails to mint with incorrect price", async function () {});
+
   it("Fails to mint multiple tokens", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
@@ -58,38 +63,13 @@ describe("Creator minting fail cases", function () {
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
     await contract.toggleMintingActive(tokenId);
-    const owner = await contract.owner();
-    await contract.addSigner(owner);
-    const { signatures, signers } = await createSignaturesCreator(
-      contract,
-      tokenId,
-      0 // free mint as specified in the signature
-    );
-    // use the signature in a mint
-    await executeSignedMint(
-      contract,
-      [tokenId, signatures[signers[0].address]],
-      signers[0],
-      0 // free mint as specified in the signature
-    );
-    // try to use the same signature again
+    await contract.mint(tokenId, emptyBytes, { value: mintPrice });
+    // try to mint again
     await expect(
-      executeSignedMint(
-        contract,
-        [tokenId, signatures[signers[0].address]],
-        signers[0],
-        0 // free mint as specified in the signature
-      )
+      contract.mint(tokenId, emptyBytes, { value: mintPrice })
     ).to.be.revertedWith("Already minted");
-    // confirm others can use their own unused sigs
-    await executeSignedMint(
-      contract,
-      [tokenId, signatures[signers[1].address]],
-      signers[1],
-      0 // free mint as specified in the signature
-    );
   });
-  it.only("Fails once exceed max supply", async function () {
+  it("Fails once exceed max supply", async function () {
     const contract = await getContract("Creator");
     const tokenId = 0;
     const mintPrice = ethers.utils.parseEther("0.1");
@@ -100,26 +80,11 @@ describe("Creator minting fail cases", function () {
     await contract.addSigner(owner);
     // set the max supply
     await contract.setMaxSupply(tokenId, 1);
-    const { signatures, signers } = await createSignaturesCreator(
-      contract,
-      tokenId,
-      0 // free mint as specified in the signature
-    );
-    // use the signature in a mint
-    await executeSignedMint(
-      contract,
-      [tokenId, signatures[signers[0].address]],
-      signers[0],
-      0 // free mint as specified in the signature
-    );
-    // try to mint again (exceed the max supply)
+    await contract.mint(tokenId, emptyBytes, { value: mintPrice });
+    // get someone else to mint
+    const signer = await ethers.getSigner(1);
     await expect(
-      executeSignedMint(
-        contract,
-        [tokenId, signatures[signers[1].address]],
-        signers[1],
-        0 // free mint as specified in the signature
-      )
+      contract.connect(signer).mint(tokenId, emptyBytes, { value: mintPrice })
     ).to.be.revertedWith("Max supply reached");
   });
 });
@@ -170,7 +135,7 @@ describe("Creator minting success cases", function () {
     await contract.setTokenPrice(tokenId, mintPrice);
     await contract.setTokenURI(tokenId, "ipfs://test");
     await contract.toggleMintingActive(tokenId);
-    const emptySignature = "0x";
+    const emptySignature = emptyBytes;
     await contract.mint(tokenId, emptySignature, { value: mintPrice });
     console.log("Checking balance");
     const signerBalance = await contract.balanceOf(
@@ -210,7 +175,7 @@ describe("Creator transfers", function () {
         signers[1].address,
         tokenId,
         1,
-        "0x"
+        emptyBytes
       )
     ).to.be.revertedWith("Transfers disabled");
   });
@@ -242,7 +207,7 @@ describe("Creator transfers", function () {
         signers[1].address,
         [tokenId],
         [1],
-        "0x"
+        emptyBytes
       )
     ).to.be.revertedWith("Transfers disabled");
   });
@@ -279,5 +244,40 @@ describe("Creator utils", function () {
     await contract.setMaxSupply(0, desiredMaxSupply);
     const maxSupply = await contract.maxSupply(0);
     expect(maxSupply).to.equal(desiredMaxSupply);
+  });
+  it("Withdraws ETH", async function () {
+    const contract = await getContract("Creator");
+    // mint a token at a price of 0.1 E
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.toggleMintingActive(tokenId);
+    const owner = await contract.owner();
+
+    await contract.mint(tokenId, emptyBytes, { value: mintPrice });
+    // check initial contract balance
+    const initialContractBalance = await ethers.provider.getBalance(
+      contract.address
+    );
+    await expect(initialContractBalance).to.equal(mintPrice);
+
+    // get initial owner balance
+    const initialOwnerBalance = await ethers.provider.getBalance(owner);
+    // withdraw the funds
+    await contract.withdrawETH();
+    // check contract balance
+    const finalContractBalance = await ethers.provider.getBalance(
+      contract.address
+    );
+    expect(finalContractBalance).to.equal(0);
+    // check owner balance diff
+    const finalOwnerBalance = await ethers.provider.getBalance(owner);
+    const diff = finalOwnerBalance.sub(initialOwnerBalance);
+    // should have gained the mintPrice (approx - gas fees)
+    const estGas = ethers.utils.parseEther("0.005");
+    expect(diff).to.be.closeTo(mintPrice, estGas);
+    // confirm its gt original bal for sanity
+    expect(finalOwnerBalance).to.be.gt(initialOwnerBalance);
   });
 });
