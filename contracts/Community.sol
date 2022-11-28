@@ -53,7 +53,7 @@ contract Community is ERC721A, Ownable, ReentrancyGuard, SignerManager {
     /**
      * @dev Withdraw ether to owner's wallet
      */
-    function withdrawEth() public onlyOwner {
+    function withdrawETH() public onlyOwner {
         uint256 balance = address(this).balance;
         (bool success, ) = payable(msg.sender).call{value: balance}("");
         require(success, "Withdraw failed");

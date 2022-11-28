@@ -6,7 +6,7 @@ import {
   getContract,
 } from "./utils";
 
-describe("Community", function () {
+describe("Minting tests", function () {
   it("Mints", async function () {
     const contract = await getContract("Community");
     await contract.toggleMintingActive();
@@ -82,5 +82,41 @@ describe("Community", function () {
         0 // free mint
       )
     ).to.be.revertedWith("Minting not active");
+  });
+});
+
+describe("Utils", function () {
+  it("Sets and gets the base URI", async function () {
+    const contract = await getContract("Community");
+    await contract.toggleMintingActive();
+    await contract.setBaseURI("https://test.com/");
+    await contract.addSigner(await contract.owner());
+    const { signatures, signers } = await createSignaturesCommunity(contract);
+    await executeSignedMint(
+      contract,
+      [signatures[signers[0].address]], // mint args (signature)
+      signers[0], // minter
+      0 // free mint
+    );
+    const uri = await contract.tokenURI(0);
+    await expect(uri).to.equal("https://test.com/0");
+  });
+  it("Withdraws ETH from accidental paid mint", async function () {
+    const contract = await getContract("Community");
+    await contract.toggleMintingActive();
+    await contract.addSigner(await contract.owner());
+    const { signatures, signers } = await createSignaturesCommunity(contract);
+    const mintValue = ethers.utils.parseEther("0.1");
+    await executeSignedMint(
+      contract,
+      [signatures[signers[0].address]], // mint args (signature)
+      signers[0], // minter
+      mintValue // paid mint
+    );
+    const balance = await ethers.provider.getBalance(contract.address);
+    await expect(balance).to.equal(mintValue);
+    await contract.withdrawETH();
+    const balanceAfter = await ethers.provider.getBalance(contract.address);
+    await expect(balanceAfter).to.equal(ethers.utils.parseEther("0"));
   });
 });
