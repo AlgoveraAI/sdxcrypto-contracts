@@ -13,6 +13,8 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
     mapping(uint256 => uint256) public tokenPrices;
     mapping(uint256 => bool) public mintingActive;
     mapping(bytes32 => bool) public usedMessages;
+    mapping(uint256 => uint256) public maxSupply;
+    mapping(uint256 => uint256) public totalSupply;
 
     string public name;
     string public symbol;
@@ -39,6 +41,11 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
         // check the balance (wallets can only use one nft - prevent double minting)
         require(balanceOf(msg.sender, tokenId) == 0, "Already minted");
 
+        // check max supply (if set)
+        if (maxSupply[tokenId] > 0) {
+            require(totalSupply[tokenId] < maxSupply[tokenId], "Max supply reached");
+        }
+
         if (signature.length > 0) {
             // check the signature (includes a custom price)
             bytes memory data = abi.encode(this, msg.sender, tokenId, msg.value);            
@@ -55,6 +62,7 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
             require(msg.value == tokenPrices[tokenId], "Incorrect value");
         }
         // mint
+        totalSupply[tokenId] += 1;
         _mint(msg.sender, tokenId, 1, "");
     }
 
@@ -88,6 +96,11 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
      */
     function toggleMintingActive(uint256 tokenId) public onlyOwner {
         mintingActive[tokenId] = !mintingActive[tokenId];
+    }
+
+    /** @dev Set token's max supply */
+    function setMaxSupply(uint256 tokenId, uint256 supply) public onlyOwner {
+        maxSupply[tokenId] = supply;
     }
 
     /**

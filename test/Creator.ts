@@ -89,6 +89,39 @@ describe("Creator minting fail cases", function () {
       0 // free mint as specified in the signature
     );
   });
+  it.only("Fails once exceed max supply", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.toggleMintingActive(tokenId);
+    const owner = await contract.owner();
+    await contract.addSigner(owner);
+    // set the max supply
+    await contract.setMaxSupply(tokenId, 1);
+    const { signatures, signers } = await createSignaturesCreator(
+      contract,
+      tokenId,
+      0 // free mint as specified in the signature
+    );
+    // use the signature in a mint
+    await executeSignedMint(
+      contract,
+      [tokenId, signatures[signers[0].address]],
+      signers[0],
+      0 // free mint as specified in the signature
+    );
+    // try to mint again (exceed the max supply)
+    await expect(
+      executeSignedMint(
+        contract,
+        [tokenId, signatures[signers[1].address]],
+        signers[1],
+        0 // free mint as specified in the signature
+      )
+    ).to.be.revertedWith("Max supply reached");
+  });
 });
 
 describe("Creator minting success cases", function () {
@@ -145,33 +178,6 @@ describe("Creator minting success cases", function () {
       tokenId
     );
     await expect(signerBalance).to.equal(1);
-  });
-});
-
-describe("Creator utils", function () {
-  it("Sets URI", async function () {
-    const contract = await getContract("Creator");
-    const uri = "ipfs://test";
-    await contract.setTokenURI(0, uri);
-    const tokenURI = await contract.uri(0);
-    console.log("tokenURI: ", tokenURI);
-    expect(tokenURI).to.equal(uri);
-  });
-  it("Sets a price", async function () {
-    const contract = await getContract("Creator");
-    const tokenId = 0;
-    const mintPrice = ethers.utils.parseEther("0.1");
-    await contract.setTokenPrice(tokenId, mintPrice);
-    const tokenPrice = await contract.tokenPrices(tokenId);
-    console.log("tokenPrice: ", tokenPrice);
-    expect(tokenPrice).to.equal(mintPrice);
-  });
-  it("Toggles mintingActive", async function () {
-    const contract = await getContract("Creator");
-    await contract.toggleMintingActive(0);
-    const mintingActive = await contract.mintingActive(0);
-    console.log("mintingActive: ", mintingActive);
-    expect(mintingActive).to.equal(true);
   });
 });
 
@@ -239,5 +245,39 @@ describe("Creator transfers", function () {
         "0x"
       )
     ).to.be.revertedWith("Transfers disabled");
+  });
+});
+
+describe("Creator utils", function () {
+  it("Sets URI", async function () {
+    const contract = await getContract("Creator");
+    const uri = "ipfs://test";
+    await contract.setTokenURI(0, uri);
+    const tokenURI = await contract.uri(0);
+    console.log("tokenURI: ", tokenURI);
+    expect(tokenURI).to.equal(uri);
+  });
+  it("Sets a price", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    const tokenPrice = await contract.tokenPrices(tokenId);
+    console.log("tokenPrice: ", tokenPrice);
+    expect(tokenPrice).to.equal(mintPrice);
+  });
+  it("Toggles mintingActive", async function () {
+    const contract = await getContract("Creator");
+    await contract.toggleMintingActive(0);
+    const mintingActive = await contract.mintingActive(0);
+    console.log("mintingActive: ", mintingActive);
+    expect(mintingActive).to.equal(true);
+  });
+  it("Sets max token supply", async function () {
+    const contract = await getContract("Creator");
+    const desiredMaxSupply = 10;
+    await contract.setMaxSupply(0, desiredMaxSupply);
+    const maxSupply = await contract.maxSupply(0);
+    expect(maxSupply).to.equal(desiredMaxSupply);
   });
 });

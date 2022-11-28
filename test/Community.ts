@@ -6,8 +6,8 @@ import {
   getContract,
 } from "./utils";
 
-describe.only("Community", function () {
-  it("Mint", async function () {
+describe("Community", function () {
+  it("Mints", async function () {
     const contract = await getContract("Community");
     await contract.toggleMintingActive();
     const qty = 1;
@@ -33,7 +33,6 @@ describe.only("Community", function () {
   it("Fails to reuse a signature", async function () {
     const contract = await getContract("Community");
     await contract.toggleMintingActive();
-    const qty = 1;
     await contract.addSigner(await contract.owner());
     const { signatures, signers } = await createSignaturesCommunity(contract);
     await executeSignedMint(
@@ -54,7 +53,6 @@ describe.only("Community", function () {
   it("Fails to use an invalid signature", async function () {
     const contract = await getContract("Community");
     await contract.toggleMintingActive();
-    const qty = 1;
     await contract.addSigner(await contract.owner());
     const { signatures, signers } = await createSignaturesCommunity(contract);
     await executeSignedMint(
@@ -74,7 +72,6 @@ describe.only("Community", function () {
   });
   it("Fails to mint if minting inactive", async function () {
     const contract = await getContract("Community");
-    const qty = 1;
     await contract.addSigner(await contract.owner());
     const { signatures, signers } = await createSignaturesCommunity(contract);
     await expect(
