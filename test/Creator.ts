@@ -54,7 +54,38 @@ describe("Creator minting fail cases", function () {
       )
     ).to.be.revertedWith("SignatureChecker: Invalid signature");
   });
-  it("Fails to mint with incorrect price", async function () {});
+  it("Fails to mint with incorrect price (signed)", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.toggleMintingActive(tokenId);
+    const { signatures, signers } = await createSignaturesCreator(
+      contract,
+      tokenId,
+      ethers.utils.parseEther("0.05") // set a price in the sig
+    );
+    await expect(
+      executeSignedMint(
+        contract,
+        [tokenId, signatures[signers[0].address]],
+        signers[0],
+        0 // attempt free mint on paid sig
+      )
+    ).to.be.revertedWith("SignatureChecker: Invalid signature");
+  });
+  it("Fails to mint with incorrect price (unsigned)", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    const mintPrice = ethers.utils.parseEther("0.1");
+    await contract.setTokenPrice(tokenId, mintPrice);
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.toggleMintingActive(tokenId);
+    await expect(
+      contract.mint(tokenId, emptyBytes, { value: mintPrice.sub(1) })
+    ).to.be.revertedWith("Incorrect value");
+  });
 
   it("Fails to mint multiple tokens", async function () {
     const contract = await getContract("Creator");
@@ -279,5 +310,42 @@ describe("Creator utils", function () {
     expect(diff).to.be.closeTo(mintPrice, estGas);
     // confirm its gt original bal for sanity
     expect(finalOwnerBalance).to.be.gt(initialOwnerBalance);
+  });
+  it("Fails to withdraw ETH if not owner", async function () {
+    const contract = await getContract("Creator");
+    // get signers
+    const signers = await ethers.getSigners();
+    const signer = signers[1]; // not the ower
+    await expect(signer.address).to.not.equal(await contract.owner());
+    // attempt to withdraw
+    await expect(contract.connect(signer).withdrawETH()).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
+  });
+  it("Looks up used sig", async function () {
+    const contract = await getContract("Creator");
+    const tokenId = 0;
+    await contract.setTokenURI(tokenId, "ipfs://test");
+    await contract.toggleMintingActive(tokenId);
+    const owner = await contract.owner();
+    await contract.addSigner(owner);
+    const { signatures, signers } = await createSignaturesCreator(
+      contract,
+      tokenId,
+      0 // free mint as specified in the signature
+    );
+    // check usedSig is false
+    const usedSig = await contract.sigUsed(signers[0].address, 0, tokenId);
+    expect(usedSig).to.equal(false);
+    // mint a token
+    await executeSignedMint(
+      contract,
+      [tokenId, signatures[signers[0].address]],
+      signers[0],
+      0 // free mint as specified in the signature
+    );
+    // check the used sig
+    const newUsedSig = await contract.sigUsed(signers[0].address, 0, tokenId);
+    expect(newUsedSig).to.equal(true);
   });
 });

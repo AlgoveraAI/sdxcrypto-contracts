@@ -110,9 +110,10 @@ contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
      */
     function sigUsed(
         address to,
+        uint256 value,
         uint256 tokenId
     ) public view returns (bool) {
-        bytes memory data = abi.encode(this, to, tokenId);
+        bytes memory data = abi.encode(this, to, tokenId, value);
         bytes32 message = SignatureChecker.generateMessage(data);
         return usedMessages[message];
     }
