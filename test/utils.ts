@@ -1,14 +1,14 @@
 const { ethers } = require("hardhat");
 const {
-  getSignatureCreator,
+  getSignatureAccess,
   getSignatureCommunity,
 } = require("../scripts/utils");
 const { Signer, Contract } = require("ethers");
 
 export async function getContract(contractName: string) {
   let constructorArgs: string[] = [];
-  if (contractName === "Creator") {
-    constructorArgs = ["Creator", "CREATOR"];
+  if (contractName === "Access") {
+    constructorArgs = ["Access", "ACCESS"];
   }
   const Contract = await ethers.getContractFactory(contractName);
   const contract = await Contract.deploy(...constructorArgs);
@@ -17,7 +17,7 @@ export async function getContract(contractName: string) {
   return contract;
 }
 
-export async function createSignaturesCreator(
+export async function createSignaturesAccess(
   contract: any,
   tokenId: number,
   price: number
@@ -31,7 +31,7 @@ export async function createSignaturesCreator(
   // create the signatures
   const signatures: any = {};
   for (const signer of signers) {
-    signatures[signer.address] = await getSignatureCreator(
+    signatures[signer.address] = await getSignatureAccess(
       owner, // signature signer
       contract.address,
       signer.address, // buyer (will sign the mint txn)

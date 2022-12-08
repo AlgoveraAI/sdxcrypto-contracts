@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./SignatureChecker.sol";
 import "./SignerManager.sol";
 
-contract Creator is ERC1155, Ownable, ReentrancyGuard, SignerManager{
+contract Access is ERC1155, Ownable, ReentrancyGuard, SignerManager{
     mapping(uint256 => string) public tokenURIs;
     mapping(uint256 => uint256) public tokenPrices;
     mapping(uint256 => bool) public mintingActive;

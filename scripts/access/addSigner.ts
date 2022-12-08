@@ -1,25 +1,24 @@
-import { ethers } from "ethers";
 import { getContract } from "../utils";
 const hre = require("hardhat");
-
+const { ethers } = hre;
 /*
-npx hardhat run scripts/creator/toggleMintingActive.ts --network goerli
+npx hardhat run scripts/access/addSigner.ts --network goerli
 */
 
-const tokenId = 0;
+// unlike community.sol, the signer here is our main deployment address
+// (not the burner wallet running serverlessly for the frontend)
 
 async function main() {
-  console.log("Toggling minting active");
-  console.log("Token ID", tokenId);
-
   // get the contract
-  const network = hre.network.name;
-  let { contract, provider } = await getContract("Creator", network);
+  const [signer] = await ethers.getSigners();
+  console.log("Adding signer (owner)", signer.address);
+  const networkName = hre.network.name;
+  let { contract, provider } = await getContract("Access", networkName);
 
   // estimate the gas required
   const methodSignature = await contract.interface.encodeFunctionData(
-    "toggleMintingActive",
-    [tokenId]
+    "addSigner",
+    [signer.address]
   );
   const owner = await contract.owner();
   const tx = {
@@ -31,7 +30,7 @@ async function main() {
   const gasEstimate = await provider.estimateGas(tx);
 
   // send the transaction to transfer ownership
-  const txnReceipt = await contract.toggleMintingActive(tokenId, {
+  const txnReceipt = await contract.addSigner(signer.address, {
     from: owner,
     value: 0,
     gasLimit: gasEstimate,
@@ -42,10 +41,6 @@ async function main() {
   // await the txn
   const receipt = await txnReceipt.wait();
   console.log("executed");
-
-  // check the token URI
-  const newState = await contract.mintingActive(tokenId);
-  console.log("minting active", newState);
 }
 
 main()

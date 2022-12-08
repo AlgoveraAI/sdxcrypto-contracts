@@ -41,7 +41,7 @@ export async function getContract(contractName: string, network: string) {
   return { contract, provider };
 }
 
-export async function getSignatureCreator(
+export async function getSignatureAccess(
   signer: any,
   contractAddress: string,
   allowlistAddress: string,
